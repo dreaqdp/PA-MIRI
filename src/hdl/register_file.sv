@@ -27,7 +27,8 @@ always_ff@(posedge clk) begin
         registers <= { {REG_NUM}{ {WD_SIZE}{1'b0} } };
     end
     else begin
-        registers[wr_rd] <= wr_data;
+        if (wr_rd != 0) // register x0 cannot be modified
+            registers[wr_rd] <= wr_data;
     end
 end
 
