@@ -20,7 +20,7 @@ module stage_alu #() (
     /* input logic instr_jm_i, // jump */
     output logic instr_jm_o, // jump
     /* input logic instr_br_i  // branch */
-    output logic instr_br_o  // branch
+    output logic instr_br_o,  // branch
 
     input logic [OPCODE_BITS-1:0] opcode_i,
     input logic [FUNCT7_BITS-1:0] funct7,
@@ -51,7 +51,7 @@ end
 assign op2_data = (instr_op_o) ? rs2_data_i: imm_se; 
 
 always_comb begin
-    case (instr[6:0]) 
+    case (opcode_i) 
         OPCODE_LD: begin
             instr_op_o = 1'b0;
             instr_ld_o = 1'b1;
@@ -102,4 +102,4 @@ alu #() alu (
     .result(alu_result)
 );
 
-endpackage
+endmodule

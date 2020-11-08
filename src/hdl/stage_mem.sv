@@ -24,8 +24,8 @@ module stage_mem #() (
     input logic instr_st_i, // store
     input logic instr_jm_i, // jump
     output logic instr_jm_o, // jump
-    input logic instr_br_i  // branch
-    output logic instr_br_o  // branch
+    input logic instr_br_i,  // branch
+    output logic instr_br_o,  // branch
 
     output [WD_SIZE-1:0] addr,
     output rd_wr,
@@ -36,7 +36,7 @@ module stage_mem #() (
 
 );
 
-wire op_en, op_wr;
+wire op_wr;
 
 assign addr = alu_result_i;
 assign op_wr = instr_st_i;
@@ -56,7 +56,7 @@ always_ff@(posedge clk) begin
         pc_o <= pc_i;
         rd_o <= rd_i;
         /* opcode_o <= opcode_i; */
-        alu_result_i <= alu_result_o;
+        alu_result_o <= alu_result_i;
 
 
     end

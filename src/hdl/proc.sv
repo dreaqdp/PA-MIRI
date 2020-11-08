@@ -13,6 +13,7 @@ module proc #(
 
 
 wire [INSTR_SIZE-1:0] pc_if_id, pc_mem_if, pc_id_ex, pc_ex_mem;
+wire [WD_SIZE-1:0] addr_dmem, wr_data_dmem, rd_data_mem;
 wire [INSTR_REG_BITS-1:0] rd_id_ex, rd_ex_mem, rd_mem_wb, rd_wb_id;
 wire instr_op_ex_mem;
 wire instr_ld_ex_mem, instr_ld_mem_wb;
@@ -27,10 +28,10 @@ wire [WD_SIZE-1:0] imm_se_id_ex;
 wire [WD_SIZE-1:0] rd_data_wb_id, rd_data_mem_wb;
 wire [WD_SIZE-1:0] alu_result_ex_mem, alu_result_mem_wb;
 wire alu_zero_ex_mem;
-wire [WD_SIZE-1:0] rd_instr,
+wire [WD_SIZE-1:0] rd_instr;
 wire [INSTR_SIZE-1:0] instr;
 wire op_en_pc, op_en_dmem;
-wire rd_pc, rd_wr_dmem;
+wire rd_pc, rd_wr_dmem, op_rd_pc;
 
 
 stage_fetch #() fetch (
@@ -66,8 +67,8 @@ stage_decode #() decode (
     .pc_i (pc_if_id),
     .pc_o (pc_id_ex),
     .instr (instr),
-    .wr_rd (rd_wb),
-    .wr_data (rd_data_wb),
+    .wr_rd (rd_wb_id),
+    .wr_data (rd_data_wb_id),
     .opcode (opcode_id_ex),
     .funct7 (funct7_id_ex),
     .funct3 (funct3_id_ex),
@@ -147,13 +148,13 @@ stage_write_back #() write_back (
     .rd_i (rd_mem_wb),
     .rd_o (rd_wb_id),
     .alu_result_i (alu_result_mem_wb),
-    .mem_data (data_mem_wb),
+    .mem_data (rd_data_mem_wb),
     .instr_ld_i (instr_ld_ex_mem),
     .instr_jm_i (instr_jm_ex_mem),
     .instr_jm_o (instr_jm_wb_if),
     .instr_br_i (instr_br_ex_mem),
     .instr_br_o (instr_br_wb_if),
-    .wr_data (rd_data_wb_id),
+    .wr_data (rd_data_wb_id)
 );
 
 

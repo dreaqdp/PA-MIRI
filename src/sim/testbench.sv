@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module loopback_TB #(
+module testbench #(
     parameter CORE_CLK_PERIOD = 4,
     parameter N_RESET = 10,
     parameter OP_INSTR = 4,
@@ -12,11 +12,12 @@ module loopback_TB #(
 ) (
 );
 
-parameter IMEM_SIZE_BYTES = 32*4;
-parameter DMEM_SIZE_BYTES = 32*4;
+parameter IMEM_SIZE_BYTES = N_INSTR*4;
+parameter DMEM_SIZE_BYTES = 8*4;
 
 // clk
 logic clk;
+logic reset_n;
 
 initial clk = 0;
 
@@ -30,38 +31,34 @@ end
 
 integer i, j;
 
-integer f_in_dmem, f_in_imem, i;
+integer f_in_dmem, f_in_imem;
 logic [IMEM_SIZE_BYTES-1:0][7:0] input_dmem;
 logic [DMEM_SIZE_BYTES-1:0][7:0] input_imem;
 
 initial begin
-    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem.csv", "r"); */
+    f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem_8bits.csv", "r");
     f_in_dmem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/dmem.csv", "r");
 
-    /* i = 0; */
-    /* while (!$feof(f_in_imem)) begin */
-    /*     $fscan(f_in_imem, "%b\n", input_imem[i]); */
-    /*    i = i + 1; */
-    /* end */
+    i = 0;
+    while (!$feof(f_in_imem)) begin
+        $fscanf(f_in_imem, "%b\n", input_imem[i]);
+       i = i + 1;
+    end
 
     i = 0;
     while (!$feof(f_in_dmem)) begin
-        $fscan(f_in_dmem, "%b\n", input_dmem[i]);
+        $fscanf(f_in_dmem, "%b\n", input_dmem[i]);
        i = i + 1;
     end
-    k = 0;
+    j = 0;
 end
 
-initial begin
-    j = 0;
-    for mem)
-end
 
 always@(posedge clk) begin
     if (j < N_RESET) begin
         /* $stop; */
        reset_n <= 0;
-       k = k + 1;
+       j = j + 1;
     end
     else
        reset_n <= 1;

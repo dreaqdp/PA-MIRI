@@ -48,15 +48,15 @@ end
 
 always_comb begin
     case (opcode) // generate immediate
-        OPCODE_ST: imm_se = { {WD_SIZE-10}{instr[31]}, instr[30:25], instr[11:8] };
-        OPCODE_BR: imm_se = { {WD_SIZE-11}{instr[31]}, instr[7], instr[30:25], instr[11:8], 1'b0 };
-        OPCODE_JM: imm_se = { {WD_SIZE-22}{instr[31]}, instr[19:12], instr[20],  instr[30:25], instr[24:21], 1'b0 }; 
+        OPCODE_ST: imm_se <= { { {WD_SIZE-10}{instr[31]} }, instr[30:25], instr[11:8] };
+        OPCODE_BR: imm_se <= { { {WD_SIZE-11}{instr[31]} }, instr[7], instr[30:25], instr[11:8], 1'b0 };
+        OPCODE_JM: imm_se <= { { {WD_SIZE-22}{instr[31]} }, instr[19:12], instr[20],  instr[30:25], instr[24:21], 1'b0 }; 
         default:  // OPCODE_OP, OPCODE_LD --> I-type instr
-            imm_se = { {WD_SIZE-12}{instr[31]}, instr[31:20] };
+            imm_se <= { { {WD_SIZE-12}{instr[31]} }, instr[31:20] };
     endcase
 end
 
-register_file #() (
+register_file #() reg_file (
     .clk (clk),
     .reset_n (reset_n),
     .rs1 (rs1),

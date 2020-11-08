@@ -3,10 +3,10 @@ import PARAMS_pkg::*;
 
 module register_file #(
     parameter REG_NUM = 32,
-    parameter SPECIAL_REG_NUM = 2;
+    parameter SPECIAL_REG_NUM = 2
 ) (
-    input clk;
-    input reset_n;
+    input clk,
+    input reset_n,
 
     input [INSTR_REG_BITS-1:0] rs1,
     input [INSTR_REG_BITS-1:0] rs2,
@@ -24,7 +24,7 @@ assign rs2_data = registers[rs2];
 
 always_ff@(posedge clk) begin
     if (!reset_n) begin
-        registers <= { {REG_NUM}{ {WD_SIZE}{1'b0} } };
+        registers <= { {REG_NUM*WD_SIZE}{1'b0} };
     end
     else begin
         if (wr_rd != 0) // register x0 cannot be modified

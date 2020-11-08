@@ -19,7 +19,7 @@ module stage_fetch #()(
 );
 
 logic [INSTR_SIZE-1:0] pc;
-logic op_en, op_rd;
+logic op_rd;
 
 /* wire pc_next4; */
 
@@ -30,18 +30,18 @@ always_ff@(posedge clk)
 begin
     if (!reset_n) begin
         pc <= BOOT_ADDR;
-        pc_actual <= BOOT_ADDR;
+        pc_o <= BOOT_ADDR;
         instr <= NOP_INSTR;
     end
     else begin
         if (instr_jm)
-            pc <= pc_jump;
+            pc <= pc_i;
         else
             pc <= pc + 4; //pc <= pc_next4;
 
         instr <= rd_instr;
     
-        pc_o = pc;
+        pc_o <= pc;
     end
 end
 
@@ -60,4 +60,4 @@ assign rd_wr = op_rd;
 /*     .rd_data(instr); */
 /* ); */
 
-endpackage
+endmodule

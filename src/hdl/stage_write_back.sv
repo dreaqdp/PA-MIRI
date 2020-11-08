@@ -17,8 +17,8 @@ module stage_write_back #() (
     /* output logic instr_ld_o, // load */
     input logic instr_jm_i, // jump
     output logic instr_jm_o, // jump
-    input logic instr_br_i  // branch
-    output logic instr_br_o  // branch
+    input logic instr_br_i,  // branch
+    output logic instr_br_o,  // branch
 
     output [WD_SIZE-1:0] wr_data
 );

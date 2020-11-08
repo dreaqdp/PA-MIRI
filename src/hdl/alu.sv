@@ -12,23 +12,24 @@ module alu #() (
     input /*logic*/ [WD_SIZE-1:0] op2_data,
 
     output zero,
-    output [WD_SIZE-1:0] result
+    output logic [WD_SIZE-1:0] result
 );
 
-/* assign zero = ; // TODO, revisar que coi avaluo a 0 */
+assign zero = 0; // TODO, revisar que coi avaluo a 0
 // TODO falta BEQ
 always_comb begin
     case (opcode)
         OPCODE_OP: begin
             case (funct7)
-                SUBS: result = op2_data - op1_data;
+                SUBS: result <= op2_data - op1_data;
                 default:  // add
-                    result = op1_data + op2_data;
+                    result <= op1_data + op2_data;
+
             endcase
         end // OPCODE_OP
 
         default: // OPCODE_LD, OPCODE_ST, OPCODE_JM, OPCODE_BR
-            result = op1_data + op2_data;
+            result <= op1_data + op2_data;
     endcase
 end
 
