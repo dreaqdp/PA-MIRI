@@ -4,7 +4,7 @@ module testbench #(
     parameter CORE_CLK_PERIOD = 4,
     parameter N_RESET = 10,
     parameter OP_INSTR = 4,
-    parameter LD_INSTR = 4,
+    parameter LD_INSTR = 5,
     parameter ST_INSTR = 4,
     parameter BR_INSTR = 0,
     parameter JM_INSTR = 0,
@@ -32,21 +32,28 @@ end
 integer i, j;
 
 integer f_in_dmem, f_in_imem;
-logic [IMEM_SIZE_BYTES-1:0][7:0] input_dmem;
-logic [DMEM_SIZE_BYTES-1:0][7:0] input_imem;
+logic [IMEM_SIZE_BYTES-1:0][7:0] input_imem;
+logic [DMEM_SIZE_BYTES-1:0][7:0] input_dmem;
+
 
 initial begin
-    f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem_8bits.csv", "r");
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem_8bits_reversed.csv", "r"); */
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_addi.mem", "r"); */
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_add.mem", "r"); */
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_sub.mem", "r"); */
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_load.mem", "r"); */
+    f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_store.mem", "r");
     f_in_dmem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/dmem.csv", "r");
 
     i = 0;
     while (!$feof(f_in_imem)) begin
-        $fscanf(f_in_imem, "%b\n", input_imem[i]);
+        $fscanf(f_in_imem, "%x\n", input_imem[i]);
        i = i + 1;
     end
 
     i = 0;
     while (!$feof(f_in_dmem)) begin
+
         $fscanf(f_in_dmem, "%b\n", input_dmem[i]);
        i = i + 1;
     end

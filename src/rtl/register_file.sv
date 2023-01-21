@@ -8,9 +8,10 @@ module register_file #(
     input clk,
     input reset_n,
 
-    input [INSTR_REG_BITS-1:0] rs1,
-    input [INSTR_REG_BITS-1:0] rs2,
-    input [INSTR_REG_BITS-1:0] wr_rd,
+    input [INSTR_REG_SIZE-1:0] rs1,
+    input [INSTR_REG_SIZE-1:0] rs2,
+    input reg_write,
+    input [INSTR_REG_SIZE-1:0] wr_rd,
     input [WD_SIZE-1:0] wr_data,
 
     output [WD_SIZE-1:0] rs1_data,
@@ -26,8 +27,11 @@ always_ff@(posedge clk) begin
     if (!reset_n) begin
         registers <= { {REG_NUM*WD_SIZE}{1'b0} };
     end
-    else begin
-        if (wr_rd != 0) // register x0 cannot be modified
+end
+
+always_ff@(negedge clk) begin
+    if (reset_n) begin
+        if (wr_rd != 0 && reg_write) // register x0 cannot be modified
             registers[wr_rd] <= wr_data;
     end
 end
