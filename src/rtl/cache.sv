@@ -4,10 +4,10 @@ import PARAMS_pkg::*;
 module cache #(
     parameter CACHE_LINE_SIZE_BYTES = 64,
     parameter CACHE_LINE_SIZE_BITS = CACHE_LINE_SIZE_BYTES * 8,
-    parameter CACHE_NUM_LINES = 4
-    parameter CACHE_OFFSET_BITS = $clog2(CACHE_LINE_SIZE_BYTES):
-    parameter CACHE_NUM_LINE_BITS = $clog2(CACHE_NUM_LINE);
-    parameter CACHE_TAG_BITS = ADDR_SIZE - CACHE_OFFSET_BITS - CACHE_NUM_LINE_BITS;
+    parameter CACHE_NUM_LINES = 4,
+    parameter CACHE_OFFSET_BITS = $clog2(CACHE_LINE_SIZE_BYTES),
+    parameter CACHE_NUM_LINE_BITS = $clog2(CACHE_NUM_LINE),
+    parameter CACHE_TAG_BITS = ADDR_SIZE - CACHE_OFFSET_BITS - CACHE_NUM_LINE_BITS
 ) (
     input clk,
     input reset_n,
@@ -79,7 +79,7 @@ always_comb begin
                 mem_addr_o <= addr_i;
                 mem_op_rd_wr_o <= op_rd_wr_i;
 
-                +gT
+                
 
                 // dirty a 0, valid a 1
 

@@ -30,6 +30,8 @@ module stage_ex #() (
     input logic [FUNCT7_SIZE-1:0] ctrl_funct7_i,
     input logic [FUNCT3_SIZE-1:0] ctrl_funct3_i,
     output logic [FUNCT3_SIZE-1:0] ctrl_mem_width_o,
+    input logic stall_proc_i,
+    output logic stall_proc_o,
     input logic [WD_SIZE-1:0] rs1_data_i,
     input logic [WD_SIZE-1:0] imm_se_i, //sign extended
 
@@ -84,6 +86,8 @@ always_ff@(posedge clk) begin
         ctrl_jm_q <= ctrl_jm_i;
         ctrl_br_q <= ctrl_br_i;
         ctrl_mem_width_q <= ctrl_funct3_i;
+
+        stall_proc_o <= stall_proc_i;
 
     end
 end

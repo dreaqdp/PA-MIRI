@@ -34,7 +34,8 @@ module stage_decode #() (
     input logic [INSTR_REG_SIZE-1:0] rd_ex_i, // to check dependencies
     input logic [INSTR_REG_SIZE-1:0] rd_mem_i, // to check dependencies
 
-    output logic stall_proc_o
+    output logic stall_proc_if_o,
+    output logic stall_proc_ex_o
     // input logic rd wb comes in rd_i
 
 
@@ -70,12 +71,12 @@ assign match_rs2 = ((rd_ex_i == rs2) || (rd_mem_i == rs2)) && (rs2 != { {INSTR_R
 /* assign imm_se = imm_se_q; */
 
 assign dependency = (match_rs1 | match_rs2) & instr_valid_i; // if rd of a previous instr matches de current instr
-assign stall_proc_o = dependency;
+assign stall_proc_if_o = dependency;
 // end dependencies check
 
 logic ctrl_reg_write_d;
         /* ctrl_reg_write_o <= (ctrl_op_q || ctrl_ld_q) && (instr_i != NOP_INSTR); */
-assign        ctrl_reg_write_d = (ctrl_op_q || ctrl_ld_q) && ( |instr_i ) && !dependency; // write only if op or load instr and not a NOP instr and not stalling proc
+assign ctrl_reg_write_d = (ctrl_op_q || ctrl_ld_q) && ( |instr_i ) && !dependency; // write only if op or load instr and not a NOP instr and not stalling proc
 
 always_ff@(posedge clk) begin
     if (!reset_n) begin
@@ -110,12 +111,13 @@ always_ff@(posedge clk) begin
         ctrl_br_o <= ctrl_br_q; // branch
 
         ctrl_reg_write_o <= ctrl_reg_write_d;
+        stall_proc_ex_o <= dependency;
 
-        if (wr_rd_i == rs1)
+        if ( (wr_rd_i == rs1) & ctrl_reg_write_i )
             rs1_data_o <= wr_data_i;
         else
             rs1_data_o <= rs1_data_q;
-        if (wr_rd_i == rs2)
+        if ( (wr_rd_i == rs2) & ctrl_reg_write_i )
             rs2_data_o <= wr_data_i;
         else
             rs2_data_o <= rs2_data_q;

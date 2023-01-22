@@ -13,7 +13,7 @@ module proc #(
 
 
 wire [INSTR_SIZE-1:0] pc_if_id, pc_mem_if, pc_id_ex, pc_ex_mem;
-wire [WD_SIZE-1:0] addr_imem, addr_dmem, wr_data_dmem, rd_data_mem;
+wire [WD_SIZE-1:0] addr_imem, addr_dmem, wr_data_dmem, wr_keep_dmem, rd_data_mem;
 wire [INSTR_REG_SIZE-1:0] rd_id_ex, rd_ex_mem, rd_mem_wb, rd_wb_id, rd_mem_dc, rd_ex_dc;
 wire ctrl_op_dc_ex, ctrl_op_ex_mem;
 wire ctrl_ld_dc_ex, ctrl_ld_ex_mem, ctrl_ld_mem_wb;
@@ -35,7 +35,7 @@ wire [INSTR_SIZE-1:0] instr;
 wire op_en_pc, op_en_dmem;
 wire rd_wr_dmem, op_rd_pc;
 wire take_br_mem_if;
-wire stall_proc_dc_if;
+wire stall_proc_dc_if, stall_proc_dc_ex, stall_proc_ex_mem;
 wire instr_valid_if_ex;
 
 
@@ -95,7 +95,8 @@ stage_decode #() stage_decode_inst (
     .ctrl_reg_write_i (ctrl_reg_write_wb_dc),
     .rd_ex_i (rd_ex_dc),
     .rd_mem_i (rd_mem_dc),
-    .stall_proc_o (stall_proc_dc_if)
+    .stall_proc_if_o (stall_proc_dc_if),
+    .stall_proc_ex_o (stall_proc_dc_ex)
 
 );
 
@@ -123,6 +124,8 @@ stage_ex #() stage_ex_inst (
     .ctrl_funct7_i (ctrl_funct7_id_ex),
     .ctrl_funct3_i (ctrl_funct3_id_ex),
     .ctrl_mem_width_o (ctrl_mem_width_ex_mem),
+    .stall_proc_i (stall_proc_dc_ex),
+    .stall_proc_o (stall_proc_ex_mem),
     .rs1_data_i (rs1_data_id_ex),
     .imm_se_i (imm_se_id_ex),
     .alu_result_o (alu_result_ex_mem),
@@ -164,12 +167,14 @@ stage_mem #() stage_mem_inst (
     .ctrl_mem_width_i (ctrl_mem_width_ex_mem),
     .ctrl_reg_write_i (ctrl_reg_write_ex_mem),
     .ctrl_reg_write_o (ctrl_reg_write_mem_wb),
+    .stall_proc_i (stall_proc_ex_mem),
     .alu_result_i (alu_result_ex_mem),
     .alu_result_o (alu_result_mem_wb),
     .dmem_addr_o (addr_dmem),
     .dmem_rd_wr_o (rd_wr_dmem),
     .dmem_op_en_o (op_en_dmem),
     .dmem_wr_data_o (wr_data_dmem),
+    .dmem_wr_keep_o (wr_keep_dmem),
     .dmem_rd_data_i (rd_data_mem),
     .mem_data_o (rd_data_mem_wb),
     .take_br_o (take_br_mem_if)
@@ -184,6 +189,7 @@ memory #(
     .op_rd_wr (rd_wr_dmem),
     .op_en (op_en_dmem),
     .wr_data (wr_data_dmem),
+    .wr_keep (wr_keep_dmem),
     .rd_data (rd_data_mem),
     .input_data (input_data_dmem)
 );

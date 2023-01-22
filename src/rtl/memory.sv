@@ -21,12 +21,14 @@ module memory #(
     input [INPUT_SIZE-1:0][7:0] input_data
 );
 
+localparam integer BYTE = 8;
+localparam integer ACCESS_BYTES = WD_SIZE/BYTE;
+
 logic [MEM_SIZE_BYTES-1:0][7:0] memory;
 
 logic [WD_SIZE-1:0] wr_data_keep, mem_data;
 
-assign mem_data = memory[addr[11:0]+:WD_SIZE];
-localparam integer BYTE = 8;
+assign mem_data = memory[addr+:WD_SIZE];
 
 genvar i;
 generate
@@ -44,8 +46,8 @@ always_comb begin
     else begin
         if (op_en) begin
             case (op_rd_wr) 
-                1'b1: memory[addr[11:0]+:WD_SIZE] <= wr_data_keep; // write
-                default: rd_data <= memory[addr[11:0]+:WD_SIZE]; // read 
+                1'b1: memory[addr+:ACCESS_BYTES] <= wr_data_keep; // write
+                default: rd_data <= memory[addr[11:0]+:ACCESS_BYTES]; // read 
             endcase
         end
     end
