@@ -76,7 +76,7 @@ assign stall_proc_if_o = dependency;
 
 logic ctrl_reg_write_d;
         /* ctrl_reg_write_o <= (ctrl_op_q || ctrl_ld_q) && (instr_i != NOP_INSTR); */
-assign ctrl_reg_write_d = (ctrl_op_q || ctrl_ld_q) && ( |instr_i ) && !dependency; // write only if op or load instr and not a NOP instr and not stalling proc
+assign ctrl_reg_write_d = (ctrl_op_q | ctrl_ld_q) & (~(|instr_i[11:7])) & !dependency & instr_valid_i ; // write only if op or load instr and not a NOP instr and not stalling proc
 
 always_ff@(posedge clk) begin
     if (!reset_n) begin

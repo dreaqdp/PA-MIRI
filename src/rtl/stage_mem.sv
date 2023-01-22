@@ -15,7 +15,7 @@ module stage_mem #() (
     input logic [WD_SIZE-1:0] alu_result_i,
     output logic [WD_SIZE-1:0] alu_result_o,
 
-    input logic alu_zero_i,
+    input logic alu_cmp_i,
     input logic [WD_SIZE-1:0] rs2_data_i,
 
     output logic take_br_o,
@@ -110,7 +110,7 @@ end
 
 assign dmem_wr_keep_o = dmem_wr_keep_d;
 
-assign take_br_o = take_br_q;
+assign take_br_q = ctrl_br_i && alu_cmp_i;
 
 assign rd_dc_o = rd_i;
 
@@ -118,7 +118,7 @@ assign rd_dc_o = rd_i;
 always_ff@(posedge clk) begin
     if (!reset_n) begin
         /* op_en <= 1'b0; */
-        take_br_q <= 1'b0;
+        take_br_o <= 1'b0;
         ctrl_reg_write_o <= 1'b0;
         /* rd_dc_o <= 1'b0; */
     end
@@ -133,7 +133,7 @@ always_ff@(posedge clk) begin
         ctrl_reg_write_o <= ctrl_reg_write_i;
 
         mem_data_o <= mem_data_q;
-        take_br_q <= ctrl_br_i && alu_zero_i;
+        take_br_o <= take_br_q;
 
 
     end

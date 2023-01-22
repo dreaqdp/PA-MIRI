@@ -29,14 +29,14 @@ wire [WD_SIZE-1:0] rs1_data_id_ex, rs2_data_id_ex, rs2_data_ex_mem;
 wire [WD_SIZE-1:0] imm_se_id_ex;
 wire [WD_SIZE-1:0] rd_data_wb_id, rd_data_mem_wb;
 wire [WD_SIZE-1:0] alu_result_ex_mem, alu_result_mem_wb;
-wire alu_zero_ex_mem;
+wire alu_cmp_ex_mem;
 wire [WD_SIZE-1:0] rd_instr;
 wire [INSTR_SIZE-1:0] instr;
 wire op_en_pc, op_en_dmem;
 wire rd_wr_dmem, op_rd_pc;
 wire take_br_mem_if;
 wire stall_proc_dc_if, stall_proc_dc_ex, stall_proc_ex_mem;
-wire instr_valid_if_ex;
+wire instr_valid_if_ex, instr_valid_if_dc;
 
 
 stage_fetch #() stage_fetch_inst (
@@ -47,7 +47,8 @@ stage_fetch #() stage_fetch_inst (
     /* .ctrl_jm (ctrl_jm_mem_wb), */
     .take_br_i (take_br_mem_if),
     .instr_o (instr),
-    .instr_valid_o (instr_valid_if_ex),
+    .instr_valid_dc_o (instr_valid_if_dc),
+    .instr_valid_ex_o (instr_valid_if_ex),
     .imem_addr_o (addr_imem),
     .imem_rd_wr_o (op_rd_pc),
     .imem_op_en_o (op_en_pc),
@@ -76,7 +77,7 @@ stage_decode #() stage_decode_inst (
     .pc_i (pc_if_id),
     .pc_o (pc_id_ex),
     .instr_i (instr),
-    .instr_valid_i (instr_valid_if_ex),
+    .instr_valid_i (instr_valid_if_dc),
     .wr_rd_i (rd_wb_id),
     .wr_data_i (rd_data_wb_id),
     .ctrl_opcode_o (ctrl_opcode_id_ex),
@@ -108,6 +109,7 @@ stage_ex #() stage_ex_inst (
     .rd_i (rd_id_ex),
     .rd_dc_o (rd_ex_dc),
     .rd_o (rd_ex_mem),
+    .ctrl_valid_i (instr_valid_if_ex),
     .ctrl_op_i (ctrl_op_dc_ex),
     .ctrl_ld_i (ctrl_ld_dc_ex),
     .ctrl_st_i (ctrl_st_dc_ex),
@@ -129,7 +131,7 @@ stage_ex #() stage_ex_inst (
     .rs1_data_i (rs1_data_id_ex),
     .imm_se_i (imm_se_id_ex),
     .alu_result_o (alu_result_ex_mem),
-    .alu_zero_o (alu_zero_ex_mem),
+    .alu_cmp_o (alu_cmp_ex_mem),
     .rs2_data_i (rs2_data_id_ex),
     .rs2_data_o (rs2_data_ex_mem)
 );
@@ -154,7 +156,7 @@ stage_mem #() stage_mem_inst (
     .rd_i (rd_ex_mem),
     .rd_o (rd_mem_wb),
     .rd_dc_o (rd_mem_dc),
-    .alu_zero_i (alu_zero_ex_mem),
+    .alu_cmp_i (alu_cmp_ex_mem),
     .rs2_data_i (rs2_data_ex_mem),
     /* .ctrl_op_i (ctrl_op_ex_mem), */
     .ctrl_ld_i (ctrl_ld_ex_mem),

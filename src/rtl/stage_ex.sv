@@ -30,13 +30,14 @@ module stage_ex #() (
     input logic [FUNCT7_SIZE-1:0] ctrl_funct7_i,
     input logic [FUNCT3_SIZE-1:0] ctrl_funct3_i,
     output logic [FUNCT3_SIZE-1:0] ctrl_mem_width_o,
+    input logic ctrl_valid_i,
     input logic stall_proc_i,
     output logic stall_proc_o,
     input logic [WD_SIZE-1:0] rs1_data_i,
     input logic [WD_SIZE-1:0] imm_se_i, //sign extended
 
     output logic [WD_SIZE-1:0] alu_result_o,
-    output logic alu_zero_o,
+    output logic alu_cmp_o,
     
     input logic [WD_SIZE-1:0] rs2_data_i,
     output logic [WD_SIZE-1:0] rs2_data_o
@@ -45,8 +46,9 @@ module stage_ex #() (
 
 logic [FUNCT3_SIZE-1:0] ctrl_mem_width_q;
 logic [WD_SIZE-1:0] alu_result_q, alu_result_d, mul_result_d, rs2_data_q, rd_q;
-logic alu_zero_q, mult_valid_result_q, ctrl_ld_q, ctrl_st_q, ctrl_jm_q, ctrl_br_q, ctrl_reg_write_q;
+logic alu_cmp_q, mult_valid_result_q, ctrl_ld_q, ctrl_st_q, ctrl_jm_q, ctrl_br_q, ctrl_reg_write_q;
 
+assign ctrl_reg_write_d = (ctrl_reg_write_i & (~stall_proc_i) & (~ctrl_valid_i));
 assign ctrl_reg_write_o = ctrl_reg_write_q;
 assign ctrl_ld_o = ctrl_ld_q;
 assign ctrl_st_o = ctrl_st_q;
@@ -77,9 +79,9 @@ always_ff@(posedge clk) begin
         /* else begin */
         /*     stage_result_q <= alu_result_d; */
         /* end */
-        alu_zero_o <= alu_zero_q;
+        alu_cmp_o <= alu_cmp_q;
 
-        ctrl_reg_write_q <= ctrl_reg_write_i;
+        ctrl_reg_write_q <= ctrl_reg_write_d;
         /* ctrl_reg_write_q <= (ctrl_op_i && (ctrl_funct7_i != F7_MULDIV)) ? ctrl_reg_write_i : 1'b0; */
         ctrl_ld_q <= ctrl_ld_i;
         ctrl_st_q <= ctrl_st_i;
@@ -92,7 +94,6 @@ always_ff@(posedge clk) begin
     end
 end
 
-/* assign op2_data = (ctrl_op_i) ? rs2_data_i : imm_se_i;  // alu src */
 
 
 alu #() alu_inst (
@@ -104,7 +105,7 @@ alu #() alu_inst (
     .op1_data_i (rs1_data_i),
     .op2_data_i (rs2_data_i),
     .imm_se_i (imm_se_i),
-    .zero_o (alu_zero_q),
+    .cmp_o (alu_cmp_q),
     .result_o (alu_result_d)
 );
 

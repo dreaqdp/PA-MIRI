@@ -14,7 +14,8 @@ add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/pc_i
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/pc_o
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/take_br_i
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_o
-add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_valid_o
+add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_valid_dc_o
+add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_valid_ex_o
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/imem_addr_o
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/imem_rd_wr_o
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/imem_op_en_o
@@ -22,6 +23,9 @@ add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/imem_rd
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/stall_proc_i
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/pc
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/next_pc
+add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/kill
+add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_valid_q
+add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/instr_valid_d
 add wave -noupdate -expand -group fetch /testbench/proc/stage_fetch_inst/op_rd
 add wave -noupdate -group imem /testbench/proc/imem/clk
 add wave -noupdate -group imem /testbench/proc/imem/reset_n
@@ -76,6 +80,16 @@ add wave -noupdate -group reg_file /testbench/proc/stage_decode_inst/reg_file/rs
 add wave -noupdate -group reg_file /testbench/proc/stage_decode_inst/reg_file/rs2_data
 add wave -noupdate -group reg_file -childformat {{{/testbench/proc/stage_decode_inst/reg_file/registers[8]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[7]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[6]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[5]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[4]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[3]} -radix hexadecimal} {{/testbench/proc/stage_decode_inst/reg_file/registers[2]} -radix decimal}} -expand -subitemconfig {{/testbench/proc/stage_decode_inst/reg_file/registers[8]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[7]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[6]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[5]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[4]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[3]} {-height 17 -radix hexadecimal} {/testbench/proc/stage_decode_inst/reg_file/registers[2]} {-height 17 -radix decimal}} /testbench/proc/stage_decode_inst/reg_file/registers
 add wave -noupdate -divider ALU
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/clk
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/reset_n
+add wave -noupdate -expand -group alu_stage -group alu -radix binary /testbench/proc/stage_ex_inst/alu_inst/opcode_i
+add wave -noupdate -expand -group alu_stage -group alu -radix binary /testbench/proc/stage_ex_inst/alu_inst/funct7_i
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/funct3_i
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/op1_data_i
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/op2_data_i
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/imm_se_i
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/cmp_o
+add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/result_o
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/clk
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/reset_n
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/pc_i
@@ -98,24 +112,17 @@ add wave -noupdate -expand -group alu_stage -radix binary /testbench/proc/stage_
 add wave -noupdate -expand -group alu_stage -radix binary /testbench/proc/stage_ex_inst/ctrl_funct7_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/ctrl_funct3_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/ctrl_mem_width_o
+add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/ctrl_valid_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/stall_proc_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/stall_proc_o
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/rs1_data_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/imm_se_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/alu_result_o
-add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/alu_zero_o
+add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/alu_cmp_o
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/rs2_data_i
 add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/rs2_data_o
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/clk
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/reset_n
-add wave -noupdate -expand -group alu_stage -group alu -radix binary /testbench/proc/stage_ex_inst/alu_inst/opcode_i
-add wave -noupdate -expand -group alu_stage -group alu -radix binary /testbench/proc/stage_ex_inst/alu_inst/funct7_i
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/funct3_i
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/op1_data_i
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/op2_data_i
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/imm_se_i
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/zero_o
-add wave -noupdate -expand -group alu_stage -group alu /testbench/proc/stage_ex_inst/alu_inst/result_o
+add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/ctrl_reg_write_q
+add wave -noupdate -expand -group alu_stage /testbench/proc/stage_ex_inst/ctrl_reg_write_d
 add wave -noupdate -divider MEM
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/clk
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/reset_n
@@ -126,7 +133,7 @@ add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/rd_o
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/rd_dc_o
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/alu_result_i
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/alu_result_o
-add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/alu_zero_i
+add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/alu_cmp_i
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/rs2_data_i
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/take_br_o
 add wave -noupdate -expand -group mem_stage /testbench/proc/stage_mem_inst/ctrl_ld_i
@@ -169,6 +176,10 @@ add wave -noupdate -group write_back_stage /testbench/proc/stage_write_back_inst
 add wave -noupdate -group write_back_stage /testbench/proc/stage_write_back_inst/ctrl_reg_write_i
 add wave -noupdate -group write_back_stage /testbench/proc/stage_write_back_inst/ctrl_reg_write_o
 add wave -noupdate -group write_back_stage /testbench/proc/stage_write_back_inst/wr_data_o
+add wave -noupdate -divider DECODE
+add wave -noupdate -divider ALU
+add wave -noupdate -divider MEM
+add wave -noupdate -divider WB
 add wave -noupdate /testbench/IMEM_SIZE_BYTES
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{output fetch} {42000 ps} 1} {{Cursor 2} {105505 ps} 0}

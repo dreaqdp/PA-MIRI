@@ -30,6 +30,11 @@ package PARAMS_pkg;
     parameter F3_STB = 3'b0;
     parameter F3_STW = 3'b010;
     parameter F3_BEQ = 3'b0;
+    parameter F3_BNE = 3'b001;
+    parameter F3_BLT = 3'b100;
+    parameter F3_BGE = 3'b101;
+    parameter F3_BLTU = 3'b110;
+    parameter F3_BGEU = 3'b111;
 
     parameter MEM_ACCESS_BYTE = 3'b000;
     parameter MEM_ACCESS_HALF = 3'b001;
