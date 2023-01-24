@@ -1,0 +1,73 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage[english]{babel}
+\usepackage{float} % to allow fixing position of figures, tables..
+\usepackage[colorlinks,linkcolor=black,bookmarksopen,bookmarksnumbered,backref]{hyperref}
+\usepackage{multirow}
+\usepackage[x11names,rgb,table,xcdraw]{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage[a4paper, vmargin=20mm]{geometry}
+\usepackage[acronym]{glossaries}
+\usepackage[framemethod=default]{mdframed} % boxes
+\usepackage{titlesec}
+\usepackage{lscape}
+
+
+\newcommand{\aqnote}[1]{ {\color{violet}\textbf{AQ:} #1 } }
+
+\widowpenalty10000
+\clubpenalty10000
+
+\definecolor{myorange}{RGB}{170,80,10}
+\definecolor{myblue}{RGB}{120,100,180}
+\definecolor{mygreen}{RGB}{80,115,75}
+\lstset{
+  language=verilog,
+  basicstyle=\ttfamily\footnotesize, 
+  keywordstyle=\color{myorange}\bfseries,
+  stringstyle=\color{mygreen},
+  commentstyle=\color{myblue},
+  morecomment=[s][\color{blue}]{/**}{*/},
+  extendedchars=true, 
+  showspaces=false, 
+  showstringspaces=false, 
+  numbers=left,
+  numberstyle=\scriptsize,
+  breaklines=true, 
+  backgroundcolor=\color{gray!4}, 
+  breakautoindent=true, 
+  captionpos=b,
+  xleftmargin=0pt,
+  tabsize=4,
+  frame=single
+}
+
+\setlength{\parindent}{2.0em}
+\setlength{\parskip}{0.5em}
+
+% \input{02_acronyms.tex}
+
+\mdfsetup{%
+    % leftmargin=2em,
+    % rightmargin=2em,
+    innerleftmargin=1em,
+    nobreak=false
+}
+
+\titlespacing*{\subsection}
+  {0pt}{2\baselineskip}{\baselineskip}
+
+\begin{document}
+\include{01_title_page}
+\tableofcontents
+
+\clearpage
+
+\include{10_block_diagram}
+\include{20_instructions}
+\include{30_performance}
+
+\end{document}

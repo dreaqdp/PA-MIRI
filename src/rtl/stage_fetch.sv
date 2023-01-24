@@ -25,7 +25,7 @@ module stage_fetch #()(
 
 );
 
-logic [INSTR_SIZE-1:0] pc, next_pc;
+logic [INSTR_SIZE-1:0] pc, next_pc, pc_fetch;
 logic op_rd;
 logic kill;
 logic instr_valid_q, instr_valid_d;
@@ -33,7 +33,7 @@ logic instr_valid_q, instr_valid_d;
 assign imem_addr_o = pc;
 
 assign imem_rd_wr_o = RD;
-assign imem_op_en_o = reset_n & !stall_proc_i;
+assign imem_op_en_o = reset_n & ~stall_proc_i & ~kill;
 
 always_comb 
 begin
@@ -42,15 +42,21 @@ begin
         else if (!stall_proc_i)
             next_pc <= pc + 4; //pc <= pc_next4;
         else 
-            next_pc <= pc;
+            next_pc <= pc_fetch;
 end
 
-assign pc_o = pc;
+/* assign pc_o = pc; */
+assign pc_o = pc_fetch;
 
 assign kill = take_br_i;
-assign instr_valid_d = ~(stall_proc_i | kill);
-assign instr_valid_ex_o = instr_valid_d;
-assign instr_valid_dc_o = instr_valid_q | instr_valid_d;
+assign instr_valid_d = ~(kill);
+/* assign instr_valid_ex_o = instr_valid_d; */
+/* assign instr_valid_dc_o = instr_valid_d; */
+assign instr_valid_ex_o = instr_valid_q;
+/* assign instr_valid_dc_o = instr_valid_q; */
+/* assign instr_valid_d = ~(stall_proc_i | kill); */
+/* assign instr_valid_ex_o = instr_valid_d; */
+/* assign instr_valid_dc_o = instr_valid_q | instr_valid_d; */
 
 always_ff@(posedge clk) 
 begin
@@ -62,23 +68,22 @@ begin
     else begin
 
         instr_o <= imem_rd_instr_i;
-        instr_valid_q <= instr_valid_d;
+        /* instr_valid_q <= instr_valid_d; */
+        instr_valid_q <= 1'b1;
     
         pc <= next_pc;
     end
 end
 
-
-/* memory #( */
-/*     .MEM_SIZE_BITS (128*4); */
-/* ) imem ( */
-/*     .clk (clk), */
-/*     .reset_n (reset_n), */
-/*     .addr(pc), */
-/*     .rd_wr(op_rd), */
-/*     .op_en(op_en), */
-/*     .wr_data({{WD_SIZE}{1'b0}}), */
-/*     .rd_data(instr); */
-/* ); */
+always_ff@(posedge clk) begin
+    /* if (!reset_n) */ 
+    /*     pc_fetch <= BOOT_ADDR; */
+    /* else */
+    /*     if (stall_proc_i) */ 
+            pc_fetch <= pc;
+        /* else */ 
+        /*     pc_fetch <= pc + 4; */
+    instr_valid_dc_o <= instr_valid_q;
+end
 
 endmodule

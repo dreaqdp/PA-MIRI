@@ -22,7 +22,7 @@ parameter CLK_PERIOD      = 2;
 parameter CLK_HALF_PERIOD = CLK_PERIOD / 2;
 
 
-    logic  [OPCODE_SIZE-1:0] opcode_i;
+    logic  op_i;
     logic  [FUNCT7_SIZE-1:0] funct7_i;
     logic  [FUNCT3_SIZE-1:0] funct3_i;
     logic  [WD_SIZE-1:0] op1_data_i;
@@ -42,7 +42,7 @@ reg[64*8:0] tb_test_name;
 multiplier #() multiplier_inst (
     .clk (clk),
     .reset_n (reset_n),
-    .opcode_i (opcode_i),
+    .op_i (op_i),
     .funct7_i (funct7_i),
     .funct3_i (funct3_i),
     .op1_data_i (op1_data_i),
@@ -80,7 +80,7 @@ multiplier #() multiplier_inst (
             $display("*** init_sim");
             /* tb_data_rs1_i<='{default:0}; */
             /* tb_data_rs2_i<='{default:0}; */
-            opcode_i<='{default:0};
+            op_i<='{default:0};
             funct7_i <= '{default:0};
             funct3_i <= '{default:0};
             reset_n <= '{default:0};
@@ -131,8 +131,8 @@ multiplier #() multiplier_inst (
             $display("*** test_sim");
             test_sim_1(tmp);
             check_out(1,tmp);
-            /* test_sim_2(tmp); */
-            /* check_out(1,tmp); */
+            test_sim_4(tmp);
+            check_out(1,tmp);
             /* test_sim_3(tmp); */
             /* check_out(1,tmp); */
         end
@@ -145,7 +145,7 @@ multiplier #() multiplier_inst (
             int src1,src2,correct_result;
             tb_test_name = "test_sim_mult_wrong";
             tmp = 0;
-            opcode_i <= OPCODE_OP;
+            op_i <= 1'b1;
             funct7_i <= F7_MULDIV;
             funct3_i <= F3_MUL;
             for(int i = 0; i < 100; i++) begin
@@ -169,6 +169,36 @@ multiplier #() multiplier_inst (
         end
     endtask
 
+// Testing div alone
+    task automatic test_sim_4;
+        output int tmp;
+        begin
+            int src1,src2,correct_result;
+            tb_test_name = "test_sim_mult_wrong";
+            tmp = 0;
+            op_i <= 1'b1;
+            funct7_i <= F7_MULDIV;
+            funct3_i <= F3_DIV;
+            for(int i = 0; i < 100; i++) begin
+                src1 = $urandom();
+                src2 = $urandom();
+                op1_data_i <= src1;
+                op2_data_i <= src2;
+                tick();
+                tick();
+                tick();
+                tick();
+                tick();
+                correct_result = src1/src2;
+                if (result_o != correct_result) begin
+                    tmp = 1;
+                    `START_RED_PRINT
+                    $error("Result incorrect %h / %h = %h out: %h",src1,src2,correct_result,result_o);
+                    `END_COLOR_PRINT
+                end
+            end
+        end
+    endtask
 // test incorrect opcode, functs
     task automatic test_sim_2;
         output int tmp;
@@ -181,17 +211,17 @@ multiplier #() multiplier_inst (
             op1_data_i <= src1;
             op2_data_i <= src2;
             // wrong opcode
-            opcode_i <= OPCODE_IM;
+            op_i <= 1'b0;
             funct7_i <= F7_MULDIV;
             funct3_i <= F3_MUL;
             tick(); tick();
             // wrong funct7
-            opcode_i <= OPCODE_OP;
+            op_i <= 1'b1;
             funct7_i <= F7_SUB;
             funct3_i <= F3_MUL;
             tick(); tick();
             // wrong funct3
-            opcode_i <= OPCODE_OP;
+            op_i <= 1'b1;
             funct7_i <= F7_MULDIV;
             funct3_i <= 3'b111;
             tick(); tick();
@@ -206,7 +236,7 @@ multiplier #() multiplier_inst (
             int src1,src2,correct_result;
             tb_test_name = "test_sim_mults";
             tmp = 0;
-            opcode_i <= OPCODE_OP;
+            op_i <= 1'b1;
             funct7_i <= F7_MULDIV;
             funct3_i <= F3_MUL;
             src1 = 32'd9;

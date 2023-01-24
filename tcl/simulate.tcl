@@ -3,6 +3,8 @@ vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/PARAMS
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/alu.sv
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/register_file.sv
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/memory.sv
+vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/multiplier_block.sv
+vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/multiplier_try2.1.sv
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/stage_ex.sv
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/stage_decode.sv
 vlog -work work -vopt -sv /home/aquerol/Documents/miri/pa/PA-MIRI/src/rtl/stage_fetch.sv

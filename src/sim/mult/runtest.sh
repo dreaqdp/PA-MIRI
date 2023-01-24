@@ -8,7 +8,7 @@ TOP_DIR=$(git rev-parse --show-cdup)
 
 # vlib lib_module
 # vmap work $PWD/lib_module
-vlog $VLOG_FLAGS +acc=rn +incdir+ ${TOP_DIR}src/rtl/PARAMS_pkg.sv ${TOP_DIR}src/rtl/multiplier.sv tb_module.sv
+vlog $VLOG_FLAGS +acc=rn +incdir+ ${TOP_DIR}src/rtl/PARAMS_pkg.sv ${TOP_DIR}src/rtl/multiplier_block.sv tb_module.sv
 
 
 if [ -z "$1" ]

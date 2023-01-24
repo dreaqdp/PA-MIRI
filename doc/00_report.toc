@@ -1,0 +1,35 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Block diagram}{3}{section.1}
+\contentsline {section}{\numberline {2}Instructions}{4}{section.2}
+\contentsline {subsection}{\numberline {2.1}Load instructions}{4}{subsection.2.1}
+\contentsline {subsubsection}{\numberline {2.1.1}Fetch}{4}{subsubsection.2.1.1}
+\contentsline {subsubsection}{\numberline {2.1.2}Decode}{4}{subsubsection.2.1.2}
+\contentsline {subsubsection}{\numberline {2.1.3}Execution (ALU)}{4}{subsubsection.2.1.3}
+\contentsline {subsubsection}{\numberline {2.1.4}Memory}{4}{subsubsection.2.1.4}
+\contentsline {subsubsection}{\numberline {2.1.5}Write back}{5}{subsubsection.2.1.5}
+\contentsline {subsection}{\numberline {2.2}Store instructions}{6}{subsection.2.2}
+\contentsline {subsubsection}{\numberline {2.2.1}Fetch}{6}{subsubsection.2.2.1}
+\contentsline {subsubsection}{\numberline {2.2.2}Decode}{6}{subsubsection.2.2.2}
+\contentsline {subsubsection}{\numberline {2.2.3}Execution}{6}{subsubsection.2.2.3}
+\contentsline {subsubsection}{\numberline {2.2.4}Memory}{6}{subsubsection.2.2.4}
+\contentsline {subsubsection}{\numberline {2.2.5}Write back}{6}{subsubsection.2.2.5}
+\contentsline {subsection}{\numberline {2.3}Branch instructions}{7}{subsection.2.3}
+\contentsline {subsubsection}{\numberline {2.3.1}Fetch}{7}{subsubsection.2.3.1}
+\contentsline {subsubsection}{\numberline {2.3.2}Decode}{7}{subsubsection.2.3.2}
+\contentsline {subsubsection}{\numberline {2.3.3}Execution}{7}{subsubsection.2.3.3}
+\contentsline {subsubsection}{\numberline {2.3.4}Memory}{7}{subsubsection.2.3.4}
+\contentsline {subsubsection}{\numberline {2.3.5}Write back}{7}{subsubsection.2.3.5}
+\contentsline {subsection}{\numberline {2.4}Arithmetic instructions}{8}{subsection.2.4}
+\contentsline {subsubsection}{\numberline {2.4.1}Fetch}{8}{subsubsection.2.4.1}
+\contentsline {subsubsection}{\numberline {2.4.2}Decode}{8}{subsubsection.2.4.2}
+\contentsline {subsubsection}{\numberline {2.4.3}Execution}{8}{subsubsection.2.4.3}
+\contentsline {subsubsection}{\numberline {2.4.4}Memory}{8}{subsubsection.2.4.4}
+\contentsline {subsubsection}{\numberline {2.4.5}Write back}{8}{subsubsection.2.4.5}
+\contentsline {subsection}{\numberline {2.5}M RISC-V extension instructions}{9}{subsection.2.5}
+\contentsline {subsubsection}{\numberline {2.5.1}Fetch}{9}{subsubsection.2.5.1}
+\contentsline {subsubsection}{\numberline {2.5.2}Decode}{9}{subsubsection.2.5.2}
+\contentsline {subsubsection}{\numberline {2.5.3}Execution and Memory}{9}{subsubsection.2.5.3}
+\contentsline {subsubsection}{\numberline {2.5.4}M-extension stages}{9}{subsubsection.2.5.4}
+\contentsline {subsubsection}{\numberline {2.5.5}Write back}{9}{subsubsection.2.5.5}
+\contentsline {subsection}{\numberline {2.6}Exception instructions}{10}{subsection.2.6}
+\contentsline {section}{\numberline {3}Performance results}{11}{section.3}

@@ -1,0 +1,36 @@
+\subsection{Branch instructions}
+The implemented instructions are: \texttt{BEQ, BNE, BLT, BGE, BLTU, BGEU}.
+
+\subsubsection{Fetch}
+The Fetch stage receives the decision taken if the Memory stage, which indicated if the branch has to be taken or not. 
+It also receives the \texttt{pc} address to which branch.
+In case, the branch is taken, the \texttt{pc} is updated with the new one received.
+If a dependency is found during the Decode stage, the Fetch stage is stalled.
+
+\subsubsection{Decode}
+Branch instructions are encoded in the B-type format.
+Therefore, signals extracted from the instruction are: \texttt{opcode, func3, rs1, rs2} and \texttt{imm\_se}.
+
+The control type signal set to 1 is \texttt{ctrl\_br}, the other ones are set to 0.
+Moreover, the signal \texttt{ctrl\_reg\_write} is set to 0.
+
+\texttt{rs1} and \texttt{rs2} dependencies are checked agains older instructions in the pipeline. 
+The dependency behaviour is the same as in \autoref{load_decode} (Decode in Load instructions).
+
+If a branch is taken, the current instruction in the Decode stage is killed.
+
+\subsubsection{Execution}
+The condition of the branch is evaluated depending on the \texttt{func3} value.
+In other words, the registers are compared according to the instruction condition.
+In parallel, the \texttt{pc} address from the branch is calculated.
+
+If a branch is taken, the current instruction in the Execution stage is killed.
+
+\subsubsection{Memory}
+To check if the branch has to be taken, the signal \texttt{ctrl\_br} and the signal with the comparison result are checked. 
+If both signals are HIGH, then the branch is taken.
+
+\subsubsection{Write back}
+No data has to be written into the Register File.
+
+

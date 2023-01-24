@@ -1,0 +1,32 @@
+\subsection{Store instructions}
+The store instructions implemented are: \texttt{SW, SH, SB}.
+
+\subsubsection{Fetch}
+Stores do not affect the usual behaviour of the Fetch stage, which is adding 4 to the \texttt{pc}, unless a dependency is found in the Decode stage.
+In that case, the fetch is stalled.
+
+\subsubsection{Decode}
+Stores are encoded in the S-type format.
+Therefore, signals extracted from the instruction are: \texttt{opcode, func3} (width) \texttt{, rs1, rs2} and \texttt{imm\_se}.
+
+Moreover, the control type signals, which indicate the instruction type, are set to 0 except the \texttt{ctrl\_st}. That signal shows that the instruction is a load.
+Also, the signal \texttt{ctrl\_reg\_write} is set to 0.
+
+\texttt{rs1} and \texttt{rs2} dependencies are checked agains older instructions in the pipeline. 
+The dependency behaviour is the same as in \autoref{load_decode} (Decode in Load instructions).
+% Both registers are compared agains the \texttt{rd} register from the instructions which is currently in the Memory stage.
+% In case some register matches Execution or Memory \texttt{rd} register, the result from the read access to memory is bypassed to the corresponding source register.
+% Both registers are compared agains the \texttt{rd} register from the instructions which are currently in the Execution and Memory stage.
+% In case some register matches Execution or Memory \texttt{rd} register, the result produced from the ALU is bypassed.
+% Otherwise, Fetch and Decode are stalled, waiting for the dependency to be solved.
+
+\subsubsection{Execution}
+The store address is computed by adding register \texttt{rs1} and the sign-extended immediate.
+
+\subsubsection{Memory}
+The data memory is accessed performing a write to the address computed in the previous stage.
+The result sent to the Decode stage is the one from the Execution stage.
+
+\subsubsection{Write back}
+No data has to be written into the Register File.
+% Register \texttt{rd} from the Memory stage and the data from the memory access are selected to be written into the Register File.

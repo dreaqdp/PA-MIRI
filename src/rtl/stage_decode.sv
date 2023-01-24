@@ -11,12 +11,12 @@ module stage_decode #() (
     input logic[INSTR_SIZE-1:0] instr_i,
     input logic instr_valid_i,
 
+    // from wb
     input logic ctrl_reg_write_i,
     input logic [INSTR_REG_SIZE-1:0] wr_rd_i,
     input logic [WD_SIZE-1:0] wr_data_i,
 
     output logic [OPCODE_SIZE-1:0] ctrl_opcode_o,
-    /* output logic [7-1:0] ctrl_opcode_o, */
     output logic [FUNCT7_SIZE-1:0] ctrl_funct7_o,
     output logic [FUNCT3_SIZE-1:0] ctrl_funct3_o,
     output logic [WD_SIZE-1:0] rs1_data_o,
@@ -25,14 +25,30 @@ module stage_decode #() (
     output logic [INSTR_REG_SIZE-1:0] rd_o, //,
 
     output logic ctrl_op_o, // arith op
+    output logic ctrl_ml_o, // mult div
     output logic ctrl_ld_o, // load
     output logic ctrl_st_o, // store
     output logic ctrl_jm_o, // jump
     output logic ctrl_br_o,  // branch
     output logic ctrl_reg_write_o,
+    output logic ctrl_reg_write_ml_o,
+
+    input logic [WD_SIZE-1:0] bypass_mem_data_mem_i,
+    input logic bypass_ctrl_reg_write_mem_i,
+    input logic [WD_SIZE-1:0] bypass_result_alu_i,
+    input logic bypass_ctrl_reg_write_alu_i,
+    input logic [WD_SIZE-1:0] bypass_result_ml_i,
+    input logic bypass_ctrl_reg_write_ml_i,
 
     input logic [INSTR_REG_SIZE-1:0] rd_ex_i, // to check dependencies
     input logic [INSTR_REG_SIZE-1:0] rd_mem_i, // to check dependencies
+    input logic [INSTR_REG_SIZE-1:0] rd_m0_i, // to check dependencies from mul div
+    input logic [INSTR_REG_SIZE-1:0] rd_m1_i, // to check dependencies from mul div
+    input logic [INSTR_REG_SIZE-1:0] rd_m2_i, // to check dependencies from mul div
+    input logic [INSTR_REG_SIZE-1:0] rd_m3_i, // to check dependencies from mul div
+    input logic [INSTR_REG_SIZE-1:0] rd_m4_i, // to check dependencies from mul div
+
+    /* input logic mult_in_flight_i, */
 
     output logic stall_proc_if_o,
     output logic stall_proc_ex_o
@@ -47,12 +63,13 @@ logic match_rs1, match_rs2;
 logic [OPCODE_SIZE-1:0] opcode_q;
 logic [FUNCT7_SIZE-1:0] funct7_q;
 logic [FUNCT3_SIZE-1:0] funct3_q;
-logic [WD_SIZE-1:0] rs1_data_q, rs2_data_q, imm_se_q;
+logic [WD_SIZE-1:0] rs1_data_q, rs2_data_q, rs1_data_d, rs2_data_d, imm_se_q;
 logic [INSTR_REG_SIZE-1:0] rd_q;
-logic ctrl_op_q, ctrl_ld_q, ctrl_st_q, ctrl_jm_q, ctrl_br_q;
+logic ctrl_op_q, ctrl_ml_q, ctrl_ld_q, ctrl_st_q, ctrl_jm_q, ctrl_br_q;
+logic ctrl_op_d, ctrl_ml_d, ctrl_ld_d, ctrl_st_d, ctrl_jm_d, ctrl_br_d;
 logic [INSTR_SIZE-1:0] instr_q;
 
-logic dependency;
+logic dependency, mult_in_flight;
 
 assign rd_o = rd_q;
 assign ctrl_funct3_o = funct3_q;
@@ -63,66 +80,112 @@ assign rs2 = instr_i[24:20];
 assign opcode_q = instr_i[6:0];
 
 // dependencies check
-/* assign match_rs1 = (rd_ex_i == rs1) || (rd_mem_i == rs1) && (rs1 != { {INSTR_REG_SIZE}{1'b0} }); // do not detect dependency if reg x0 is being used in the instruction */
-assign match_rs1 = ((rd_ex_i == rs1) || (rd_mem_i == rs1)) && (rs1 != { {INSTR_REG_SIZE}{1'b0} }); // do not detect dependency if reg x0 is being used in the instruction
-assign match_rs2 = ((rd_ex_i == rs2) || (rd_mem_i == rs2)) && (rs2 != { {INSTR_REG_SIZE}{1'b0} });
+logic match_rs1_mult, match_rs2_mult;
+
+assign match_rs1_mult = (rd_m0_i == rs1) | (rd_m1_i == rs1) | (rd_m2_i == rs1) | (rd_m3_i == rs1) | (rd_m4_i == rs1);
+assign match_rs2_mult = (rd_m0_i == rs2) | (rd_m1_i == rs2) | (rd_m2_i == rs2) | (rd_m3_i == rs2) | (rd_m4_i == rs2);
+
+// prebypasses
+/* assign match_rs1 = ((rd_ex_i == rs1) || (rd_mem_i == rs1) || (match_rs1_mult)) && (rs1 != { {INSTR_REG_SIZE}{1'b0} }); // do not detect dependency if reg x0 is being used in the instruction */
+/* assign match_rs1 = ((rd_ex_i == rs1) || (rd_mem_i == rs1) || (match_rs1_mult)) && (rs1 != { {INSTR_REG_SIZE}{1'b0} }); // do not detect dependency if reg x0 is being used in the instruction */
+/* assign match_rs2 = ((rd_ex_i == rs2) || (rd_mem_i == rs2) || (match_rs2_mult)) && (rs2 != { {INSTR_REG_SIZE}{1'b0} }); */
+// postbypasses
+assign dp_load_rs1 = ( ctrl_ld_d && (rd_ex_i == rs1) );
+assign dp_load_rs2 = ( ctrl_ld_d && (rd_ex_i == rs2) );
+assign match_rs1 = (match_rs1_mult) && (rs1 != { {INSTR_REG_SIZE}{1'b0} }); // do not detect dependency if reg x0 is being used in the instruction
+assign match_rs2 = (match_rs2_mult) && (rs2 != { {INSTR_REG_SIZE}{1'b0} });
 
 
-/* assign imm_se = imm_se_q; */
+assign dependency = (match_rs1 | match_rs2) & instr_valid_i & (dp_load_rs1 | dp_load_rs2) ; // if rd of a previous instr matches de current instr
 
-assign dependency = (match_rs1 | match_rs2) & instr_valid_i; // if rd of a previous instr matches de current instr
-assign stall_proc_if_o = dependency;
+assign diff_instr_types = ( ( rd_m0_i || rd_m1_i || rd_m2_i || rd_m3_i || rd_m4_i ) != 5'b0 ) && (!ctrl_ml_d);
+logic stall_proc_if_d;
+assign stall_proc_if_d = dependency | diff_instr_types; //| mult_in_flight;
+assign stall_proc_if_o = stall_proc_if_d | 1'b0;
 // end dependencies check
 
 logic ctrl_reg_write_d;
-        /* ctrl_reg_write_o <= (ctrl_op_q || ctrl_ld_q) && (instr_i != NOP_INSTR); */
-assign ctrl_reg_write_d = (ctrl_op_q | ctrl_ld_q) & (~(|instr_i[11:7])) & !dependency & instr_valid_i ; // write only if op or load instr and not a NOP instr and not stalling proc
+assign ctrl_reg_write_d = (ctrl_op_d || ctrl_ld_d) && (instr_i[11:7] != 5'b0) && !stall_proc_if_d; // & instr_valid_i ; // write only if op or load instr and not a NOP instr and not stalling proc
+
+assign ctrl_reg_write_ml_d = (ctrl_ml_d) && (instr_i[11:7] != 5'b0) && !dependency ; // write only if mul div instr and not a NOP instr and not stalling proc
+
+assign ctrl_op_o = ctrl_op_q; // reg write
+assign ctrl_ml_o = ctrl_ml_q; // reg write
+assign ctrl_ld_o = ctrl_ld_q; // mem read & reg write
+assign ctrl_st_o = ctrl_st_q; // mem write
+assign ctrl_jm_o = ctrl_jm_q; // jump
+assign ctrl_br_o = ctrl_br_q; // branch
 
 always_ff@(posedge clk) begin
     if (!reset_n) begin
         ctrl_reg_write_o <= 1'b0;
-        /* opcode_q <= { {OPCODE_SIZE}{1'b0} }; */
-        ctrl_br_o <= 1'b0;
-        /* stall_proc_q <= 1'b0; */
+        ctrl_reg_write_ml_o <= 1'b0;
+        ctrl_br_q <= 1'b0;
         rd_q <= { {INSTR_REG_SIZE}{1'b0} };
+        ctrl_ml_q <= 1'b0;
         
     end 
     else begin
         pc_o <= pc_i;
 
-        /* opcode_q <= ctrl_opcode; */
         if (dependency) begin
-            // nop instr
             rd_q <= 5'b0;
-            funct3_q <= 5'b0;
-            funct7_q <= 5'b0;
         end
         else begin
             rd_q <= instr_i[11:7];
+        end
             funct3_q <= instr_i[14:12];
             funct7_q <= instr_i[31:25];
-        end
         imm_se_o <= imm_se_q;
         ctrl_opcode_o <= opcode_q;
-        ctrl_op_o <= ctrl_op_q; // reg write
-        ctrl_ld_o <= ctrl_ld_q; // mem read & reg write
-        ctrl_st_o <= ctrl_st_q; // mem write
-        ctrl_jm_o <= ctrl_jm_q; // jump
-        ctrl_br_o <= ctrl_br_q; // branch
+        ctrl_op_q <= ctrl_op_d; // reg write
+        ctrl_ml_q <= ctrl_ml_d; // reg write
+        ctrl_ld_q <= ctrl_ld_d; // mem read & reg write
+        ctrl_st_q <= ctrl_st_d; // mem write
+        ctrl_jm_q <= ctrl_jm_d; // jump
+        ctrl_br_q <= ctrl_br_d; // branch
 
         ctrl_reg_write_o <= ctrl_reg_write_d;
+        ctrl_reg_write_ml_o <= ctrl_reg_write_ml_d;
         stall_proc_ex_o <= dependency;
 
         if ( (wr_rd_i == rs1) & ctrl_reg_write_i )
             rs1_data_o <= wr_data_i;
         else
-            rs1_data_o <= rs1_data_q;
+            rs1_data_o <= rs1_data_d;
         if ( (wr_rd_i == rs2) & ctrl_reg_write_i )
             rs2_data_o <= wr_data_i;
         else
-            rs2_data_o <= rs2_data_q;
+            rs2_data_o <= rs2_data_d;
 
-        /* stall_proc_o <= stall_proc_q; */
+    end
+end
+
+always_comb begin
+    if ( (rs1 == rd_mem_i) && bypass_ctrl_reg_write_mem_i ) begin
+        rs1_data_d = bypass_mem_data_mem_i;
+    end
+    else if ( (rs1 == rd_ex_i) && bypass_ctrl_reg_write_alu_i ) begin
+        rs1_data_d = bypass_result_alu_i;
+    end
+    else if ( (rs1 == rd_m4_i) && bypass_ctrl_reg_write_ml_i ) begin
+        rs1_data_d = bypass_result_ml_i;
+    end
+    else begin
+        rs1_data_d = rs1_data_q;
+    end
+    
+    if ( (rs2 == rd_mem_i) && bypass_ctrl_reg_write_mem_i ) begin
+        rs2_data_d = bypass_mem_data_mem_i;
+    end
+    else if ( (rs2 == rd_ex_i) && bypass_ctrl_reg_write_alu_i ) begin
+        rs2_data_d = bypass_result_alu_i;
+    end
+    else if ( (rs2 == rd_m4_i) && bypass_ctrl_reg_write_ml_i ) begin
+        rs2_data_d = bypass_result_ml_i;
+    end
+    else begin
+        rs2_data_d = rs2_data_q;
     end
 end
 
@@ -139,53 +202,67 @@ end
 always_comb begin
     case (opcode_q) 
         OPCODE_LD: begin
-            ctrl_op_q = 1'b0;
-            ctrl_ld_q = 1'b1;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b0;
+            ctrl_op_d = 1'b0;
+            ctrl_ml_d = 1'b0; 
+            ctrl_ld_d = 1'b1;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b0;
         end // OPCODE_LD
         OPCODE_ST: begin
-            ctrl_op_q = 1'b0;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b1;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b0;
+            ctrl_op_d = 1'b0;
+            ctrl_ml_d = 1'b0; 
+            ctrl_ld_d = 1'b1;
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b1;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b0;
         end // OPCODE_ST
         OPCODE_JM: begin
-            ctrl_op_q = 1'b0;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b1;
-            ctrl_br_q = 1'b0;
+            ctrl_op_d = 1'b0;
+            ctrl_ml_d = 1'b0;
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b1;
+            ctrl_br_d = 1'b0;
         end // OPCODE_JM
         OPCODE_BR: begin
-            ctrl_op_q = 1'b0;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b1;
+            ctrl_op_d = 1'b0;
+            ctrl_ml_d = 1'b0;
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b1;
         end // OPCODE_BR
         OPCODE_OP: begin // OPCODE_OP
-            ctrl_op_q = 1'b1;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b0;
+            if (funct7_q == F7_MULDIV) begin
+                ctrl_op_d = 1'b0;
+                ctrl_ml_d = 1'b1;
+            end
+            else begin
+                ctrl_op_d = 1'b1;
+                ctrl_ml_d = 1'b0;
+            end
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b0;
         end // OPCODE_OP
         OPCODE_IM: begin // OPCODE_IM
-            ctrl_op_q = 1'b1;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b0;
+            ctrl_op_d = 1'b1;
+            ctrl_ml_d = 1'b0;
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b0;
         end // OPCODE_IM
         default: begin 
-            ctrl_op_q = 1'b0;
-            ctrl_ld_q = 1'b0;
-            ctrl_st_q = 1'b0;
-            ctrl_jm_q = 1'b0;
-            ctrl_br_q = 1'b0;
+            ctrl_op_d = 1'b0;
+            ctrl_ml_d = 1'b0;
+            ctrl_ld_d = 1'b0;
+            ctrl_st_d = 1'b0;
+            ctrl_jm_d = 1'b0;
+            ctrl_br_d = 1'b0;
         end
     endcase
 end

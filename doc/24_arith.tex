@@ -1,0 +1,33 @@
+\subsection{Arithmetic instructions}
+The arithmetic instructions implemented are: \texttt{ADD, ADDI, SUB}.
+
+\subsubsection{Fetch}
+Arithmetic instructions do not affect the usual behaviour of the Fetch stage, which is adding 4 to the \texttt{pc}, unless a dependency is found in the Decode stage.
+In that case, the fetch is stalled.
+
+\subsubsection{Decode}
+Arithmetic instructions are encoded in the R-type format for \texttt{ADD} and \texttt{sub}, and in I-type format for \texttt{ADDI}.
+
+In case of the R-type instructions, the signals extracted from the instruction are: \texttt{opcode, funct7, func3, rs1, rs2} and \texttt{rd}.
+The only control type signal set to 1 is \texttt{ctrl\_op}, which shows that is an R-type arithmetic instruction.
+
+For the I-type instructions, the following signals are extracted from the instruction: \texttt{opcode, funct7, func3, rs1, rd, imm\_se}.
+Therefore, the control type signal set to 1 is \texttt{ctrl\_im}, to indicate an I-type arithmetic instruction.
+
+In both cases, the signal \texttt{ctrl\_reg\_write} is set to 1.
+
+\texttt{rs1} and \texttt{rs2} dependencies are checked agains older instructions in the pipeline. 
+The dependency behaviour is the same as in \autoref{load_decode} (Decode in Load instructions).
+
+\subsubsection{Execution}
+The corresponding arithmetic operation is performed: a register-register addition or substaction, or the register-immediate addition.
+
+\subsubsection{Memory}
+The result from the ALU is pipelined to the next stage and bypassed if necessary to Decode.
+
+The memory is not accessed, no operation is enabled to access memory.
+
+\subsubsection{Write back}
+Register \texttt{rd} from the Memory stage and the data from the ALU are selected to be written into the Register File.
+
+

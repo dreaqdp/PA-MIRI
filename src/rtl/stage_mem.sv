@@ -32,6 +32,9 @@ module stage_mem #() (
     input logic stall_proc_i,
     /* output logic stall_proc_o, */
 
+    output logic [WD_SIZE-1:0] bypass_mem_data_o,
+    output logic bypass_ctrl_reg_write_mem_o,
+
     // dmem signals
     output [WD_SIZE-1:0] dmem_addr_o,
     output dmem_rd_wr_o,
@@ -44,6 +47,8 @@ module stage_mem #() (
 
 );
 
+localparam integer BYTE = 8;
+
 wire op_wr;
 logic take_br_q;
 logic [WD_SIZE-1:0] mem_data_q, dmem_wr_keep_d, dmem_wr_data_d;
@@ -54,7 +59,9 @@ assign dmem_op_en_o = (ctrl_ld_i | ctrl_st_i) & !stall_proc_i;
 assign dmem_wr_data_o = dmem_wr_data_d;
 /* assign mem_data_q = dmem_rd_data_i; */
 
-localparam integer BYTE = 8;
+assign bypass_mem_data_o = ctrl_ld_i ? mem_data_q : alu_result_i;
+assign bypass_ctrl_reg_write_mem_o = ctrl_reg_write_i;
+
 // load/store width
 always_comb
 begin
@@ -110,7 +117,7 @@ end
 
 assign dmem_wr_keep_o = dmem_wr_keep_d;
 
-assign take_br_q = ctrl_br_i && alu_cmp_i;
+assign take_br_q = ctrl_br_i && alu_cmp_i && !stall_proc_i;
 
 assign rd_dc_o = rd_i;
 
@@ -127,7 +134,8 @@ always_ff@(posedge clk) begin
         /* ctrl_jm_o <= ctrl_jm_i; */
         /* ctrl_br_o <= ctrl_br_i; */
         pc_br_o <= pc_br_i;
-        rd_o <= rd_i;
+        /* rd_o <= rd_i; */
+        rd_o <= ctrl_reg_write_i ? rd_i : 5'b0;
         /* opcode_o <= opcode_i; */
         alu_result_o <= alu_result_i;
         ctrl_reg_write_o <= ctrl_reg_write_i;
@@ -138,18 +146,6 @@ always_ff@(posedge clk) begin
 
     end
 end
-
-/* memory #( */
-/*     .MEM_SIZE_BITS (128*4); */
-/* ) imem ( */
-/*     .clk (clk), */
-/*     .reset_n (reset_n), */
-/*     .addr(alu_result_i), */
-/*     .rd_wr(op_wr), */
-/*     .op_en(op_en), */
-/*     .wr_data(alu_result_i), */
-/*     .rd_data(rd_data); */
-/* ); */
 
 endmodule
 

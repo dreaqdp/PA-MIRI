@@ -35,6 +35,10 @@ module stage_ex #() (
     output logic stall_proc_o,
     input logic [WD_SIZE-1:0] rs1_data_i,
     input logic [WD_SIZE-1:0] imm_se_i, //sign extended
+    
+    output logic [WD_SIZE-1:0] bypass_result_alu_o,
+    /* output logic [INSTR_SIZE-1:0] bypass_rd_alu_o, */
+    output logic bypass_ctrl_reg_write_alu_o,
 
     output logic [WD_SIZE-1:0] alu_result_o,
     output logic alu_cmp_o,
@@ -45,10 +49,10 @@ module stage_ex #() (
 );
 
 logic [FUNCT3_SIZE-1:0] ctrl_mem_width_q;
-logic [WD_SIZE-1:0] alu_result_q, alu_result_d, mul_result_d, rs2_data_q, rd_q;
+logic [WD_SIZE-1:0] alu_result_q, alu_result_d, mul_result_d, rs1_data_d, rs2_data_d, rs2_data_q, rd_q;
 logic alu_cmp_q, mult_valid_result_q, ctrl_ld_q, ctrl_st_q, ctrl_jm_q, ctrl_br_q, ctrl_reg_write_q;
 
-assign ctrl_reg_write_d = (ctrl_reg_write_i & (~stall_proc_i) & (~ctrl_valid_i));
+assign ctrl_reg_write_d = (ctrl_reg_write_i & (~stall_proc_i)); //& (~ctrl_valid_i));
 assign ctrl_reg_write_o = ctrl_reg_write_q;
 assign ctrl_ld_o = ctrl_ld_q;
 assign ctrl_st_o = ctrl_st_q;
@@ -61,6 +65,11 @@ assign rd_o = rd_q;
 assign rs2_data_o = rs2_data_q;
 assign alu_result_o = alu_result_q;
 
+assign bypass_result_alu_o = alu_result_d;
+/* assign bypass_rd_alu_o = rd_i; */
+assign bypass_ctrl_reg_write_alu_o = ctrl_ld_i ? 1'b0: ctrl_reg_write_i;
+
+
 always_ff@(posedge clk) begin
     if (!reset_n) begin
         ctrl_reg_write_q <= 1'b0;
@@ -68,7 +77,7 @@ always_ff@(posedge clk) begin
     end
     else begin
         pc_br_o <= pc_i + imm_se_i; // RISC-V B-type and J-type instr already contain a 2 shifted imm
-        rd_q <= rd_i;
+        rd_q <= ctrl_reg_write_d ? rd_i : 5'b0;
         /* opcode_o <= opcode_i; */
         rs2_data_q <= rs2_data_i;
 
@@ -109,16 +118,5 @@ alu #() alu_inst (
     .result_o (alu_result_d)
 );
 
-/* multiplier #() multiplier_inst ( */
-/*     .clk (clk), */
-/*     .reset_n (reset_n), */
-/*     .opcode_i (ctrl_opcode_i), */
-/*     .funct7_i (ctrl_funct7_i), */
-/*     .funct3_i (ctrl_funct3_i), */
-/*     .op1_data_i (rs1_data_i), */
-/*     .op2_data_i (rs2_data_i), */
-/*     .valid_result_o (mult_valid_result_q), */
-/*     .result_o (mul_result_d) */
-/* ); */
 
 endmodule

@@ -1,0 +1,31 @@
+\subsection{Load instructions}
+The load instructions implemented are: \texttt{LW, LH, LB}.
+
+\subsubsection{Fetch}
+Loads do not affect the usual behaviour of the Fetch stage, which is adding 4 to the \texttt{pc}, unless a dependency is found in the Decode stage.
+In that case, the fetch is stalled.
+
+\subsubsection{Decode} \label{load_decode}
+Loads are encoded in the I-type format, so the following signals are extracted from the instruction: \texttt{opcode, func3} (width) \texttt{, rs1, imm\_se} and \texttt{rd}.
+
+Moreover, the control signals, which indicate the instruction type, are set to 0 except the \texttt{ctrl\_ld}. That signal shows that the instruction is a load.
+Also, the signal \texttt{ctrl\_reg\_write} is set to 1.
+
+\texttt{rs1} and \texttt{rs2} dependencies are checked agains older instructions in the pipeline. 
+Both registers are compared agains the \texttt{rd} register from the instructions which are currently in the Execution, Memory and M4 stage.
+In case some register matches Execution \texttt{rd} register, the result from the alu is bypassed to the corresponding source register.
+The result bypassed from the Memory stage depends on the instruction type that is currently in that stage, if it is a load, then the read memory access data is bypassed, otherwise, the result from the ALU is bypassed.
+% In case some register matches Execution or Memory \texttt{rd} register, the result from the read access to memory is bypassed to the corresponding source register.
+% Both registers are compared agains the \texttt{rd} register from the instructions which are currently in the Execution and Memory stage.
+% In case some register matches Execution or Memory \texttt{rd} register, the result produced from the ALU is bypassed.
+If no register \texttt{rd} match, Fetch and Decode are stalled, waiting for the dependency to be solved.
+
+\subsubsection{Execution (ALU)}
+In this stage, the load address is computed by adding register \texttt{rs1} and the sign-extended immediate.
+
+\subsubsection{Memory}
+The data memory is accessed performing a read to the address computed in the previous stage.
+The result sent to the Decode stage is the one from the memory access.
+
+\subsubsection{Write back}
+Register \texttt{rd} from the Memory stage and the data from the memory access are selected to be written into the Register File.

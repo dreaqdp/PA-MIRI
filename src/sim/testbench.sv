@@ -39,11 +39,12 @@ logic [DMEM_SIZE_BYTES-1:0][7:0] input_dmem;
 initial begin
     /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem_8bits_reversed.csv", "r"); */
     /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_addi.mem", "r"); */
-    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_add.mem", "r"); */
+    f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_add.mem", "r");
     /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_sub.mem", "r"); */
     /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_load.mem", "r"); */
     /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_store.mem", "r"); */
-    f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_branch.mem", "r");
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_branch.mem", "r"); */
+    /* f_in_imem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/imem/imem_mul_div.mem", "r"); */
     f_in_dmem = $fopen("/home/aquerol/Documents/miri/pa/PA-MIRI/src/sim/dmem.csv", "r");
 
     i = 0;

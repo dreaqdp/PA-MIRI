@@ -1,0 +1,36 @@
+\subsection{M RISC-V extension instructions}
+The RISC-V M extension has been followed.
+The arithmetic instructions implemented are: \texttt{MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU}.
+
+\subsubsection{Fetch}
+M-extension instructions do not affect the usual behaviour of the Fetch stage, which is adding 4 to the \texttt{pc}, unless a dependency is found in the Decode stage.
+In that case, the fetch is stalled.
+
+\subsubsection{Decode}
+M-extension instructions are encoded in the R-type format.
+The signals extracted from the instruction are: \texttt{opcode, funct7, func3, rs1, rs2} and \texttt{rd}.
+The control type signals, which indicate the instruction type, are set to 0 except the \texttt{ctrl\_ml}. That signal shows that the instruction is a multiplication, division or remainder.
+The signal \texttt{ctrl\_reg\_write\_ml} is set to 1, and \texttt{ctrl\_reg\_write} to 0.
+
+\texttt{rs1} and \texttt{rs2} dependencies are checked agains older instructions in the pipeline. 
+The dependency behaviour is the same as in \autoref{load_decode} (Decode in Load instructions).
+However, when a M-extension instruction is being executed in its exclusive stages and a non M-extension instruction, such as \texttt{ADD}, is decoded, there is a problem. 
+The execution time of M-extension instructions is longer than the other ones, so a shorter younger intruction can write its \texttt{rd} result in the Register File before the M-extension older one. Or can even try to write to the Register File at the same time, which is not possible in my implementation.
+To solve that problem, a conservative approach has been considered: stall the shorter younger instruction in Decode stage until the M-instruction(s) graduate.
+
+
+\subsubsection{Execution and Memory}
+Those stages are not used by M-extension instructions.
+
+\subsubsection{M-extension stages}
+There are 5 M-extension-exclusive stages: M0, M1, M2, M3, M4, M5.
+The necessary signals are pipelined from M0 to M5.
+Therefore, there can be 5 non-dependent multiplications in flight at the same time.
+
+M5 stage is where the result is being computed, depending on the operation required.
+\texttt{MUL} instruction calculates the multiplication of \texttt{rs1} by \texttt{rs2} and takes the lower 32 bits.
+\texttt{MULH[[S]U]} instructions perform the signed and/or unsigned multiplication, but gather the upper 32 bits.
+\texttt{DIV[U]} instructions compute the signed/unsigned division, and \texttt{REM[U]} the remainder.
+
+\subsubsection{Write back}
+In this stage, the multiplication result is sent to the Register File.
